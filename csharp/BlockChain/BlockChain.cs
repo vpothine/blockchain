@@ -209,6 +209,36 @@ namespace BlockChainDemo
             return JsonConvert.SerializeObject(response);
         }
 
+        internal string Wallet()
+        {
+            Dictionary<string, Transaction> unused = new Dictionary<string, Transaction>();
+            int walletAmount = 0;
+            foreach (Block block in _chain)
+            {
+                List<Transaction> transactions = block.Transactions;
+                foreach (Transaction transaction in transactions)
+                {
+                    string id = transaction.TransactionID;
+                    if (unused.ContainsKey(id))
+                    {
+                        unused.Remove(id);
+                        walletAmount -= transaction.Amount;
+                    }
+                    else
+                    {
+                        unused.Add(id, transaction);
+                        walletAmount += transaction.Amount;
+                    }
+                }
+            }
+            var response = new
+            {
+                AvailableFund = walletAmount;
+                Transactions = unused;
+            };
+            return JsonConvert.SerializeObject(response);
+        }
+
         internal int CreateTransaction(string sender, string recipient, int amount)
         {
             var transaction = new Transaction
